@@ -240,16 +240,23 @@ CRIAR.analise.createGraphRadar();
  *h/               EVENT HANDLERS
  *---------------------------------------------**/
 
+  function sliderHandler(el){
+    const obj = {
+      pilar: el.parents(".page-analise").attr("CRIAR"),
+      value: parseInt(el.val()),
+      index: el.parents(".wrapper-pergunta-analise").index()
+    };
+    CRIAR.updateValues(obj);
+    CRIAR.updateGraphs(obj);
+    CRIAR.analise.updateValues();
+    CRIAR.analise.updateAllGraphs();
+  }
+
 $(".input-range-analise").on("change", function () {
-  const obj = {
-    pilar: $(this).parents(".page-analise").attr("CRIAR"),
-    value: parseInt($(this).val()),
-    index: $(this).parents(".wrapper-pergunta-analise").index(),
-  };
-  CRIAR.updateValues(obj);
-  CRIAR.updateGraphs(obj);
-  CRIAR.analise.updateValues();
-  CRIAR.analise.updateAllGraphs();
+  sliderHandler($(this));
+});
+$(".input-range-analise").on("click", function () {
+  sliderHandler($(this));
 });
 
 /**--------------------------------------------
