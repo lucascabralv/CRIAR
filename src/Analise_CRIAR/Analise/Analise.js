@@ -255,12 +255,13 @@ CRIAR.analise.createGraphRadar();
 $(".input-range-analise").on("change", function () {
   sliderHandler($(this));
 });
-$(".input-range-analise").on("click", function () {
-  sliderHandler($(this));
-});
-$(".input-range-analise").on("tap", function () {
-  sliderHandler($(this));
-});
+// Removed
+// $(".input-range-analise").on("click", function () {
+//   sliderHandler($(this));
+// });
+// $(".input-range-analise").on("tap", function () {
+//   sliderHandler($(this));
+// });
 
 /**--------------------------------------------
  *h/               CHART JS
