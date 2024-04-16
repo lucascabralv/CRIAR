@@ -1,12 +1,18 @@
+// ADICIONAR A PORCENTAGEM E O CIRCULO DE PROGRESSO
+
 class Pilar {
   constructor(id) {
     this.id = id;
     this[0] = 0;
     this[1] = 0;
     this[2] = 0;
+    this.weights = [3, 3, 3];
   }
   get average() {
-    return AVG([this[0], this[1], this[2]]);
+    // Média Simples
+    //return AVG([this[0], this[1], this[2]]);
+    // Média Ponderada
+    return W_AVG([this[0], this[1], this[2]], this.weights);
   }
 }
 
@@ -39,6 +45,14 @@ const Analise = {
     const { value, index, pilar } = obj;
     this.pilar[pilar][index] = value;
   },
+
+  updateWeights: function (obj) {
+    const { value, index, pilar } = obj;
+    this.pilar[pilar].weights[index] = value;
+  },
+  setLocalStorage: function () {
+    window.localStorage.setItem("analise_CRIAR", JSON.stringify(this));
+  },
 };
 
 function getAnswer($clicked_option) {
@@ -54,16 +68,30 @@ function getAnswer($clicked_option) {
     index: parseInt(question_index),
   });
 }
-function selectAnswer($clicked_option) {
-  $clicked_option.siblings(".selected").removeClass("selected");
-  $clicked_option.addClass("selected");
+
+function getWeight($weight_option) {
+  const value = $weight_option.attr("question_weight");
+  const question_index = $weight_option
+    .parents(".question-fwa-wrapper")
+    .attr("question-index");
+  const pilar = $weight_option.parents(".section-pilar-fwa").attr("pilar");
+  Analise.updateWeights({
+    pilar: pilar,
+    value: parseInt(value),
+    index: parseInt(question_index),
+  });
+}
+
+function highlightSelection($clicked_option, className) {
+  $clicked_option.siblings("." + className).removeClass(className);
+  $clicked_option.addClass(className);
 }
 
 function nextQuestion($option) {
   const $question = $option.parents(".question-fwa-wrapper");
 
   if (
-    $question.hasClass("current") &&
+    $question.attr("question-status") == "current" &&
     current_question_number < max_question_number
   ) {
     current_question_number++;
@@ -73,10 +101,10 @@ function nextQuestion($option) {
 }
 
 function focusNextQuestion($question) {
-  $question.removeClass("current");
+  $question.attr("question-status", ""); // set status no none
   $container
     .find("[question-number='" + current_question_number + "']")
-    .addClass("current");
+    .attr("question-status", "current");
 }
 
 function moveToNextQuestion() {
@@ -99,19 +127,38 @@ function moveToNextQuestion() {
 $(".option-fwa").on("click", function () {
   const $option = $(this);
   getAnswer($option);
-  selectAnswer($option);
+  highlightSelection($option, "selected");
   nextQuestion($option);
+});
+
+$(".weight-fwa-option").on("click", function () {
+  const $weight_option = $(this);
+  getWeight($weight_option);
+  highlightSelection($weight_option, "selected");
 });
 
 /**--------------------------------------------
  *h/          AUX FUNCTIONS/VARIABLES
  *---------------------------------------------**/
-function AVG(arr) {
+function AVG(values) {
   let sum = 0;
   let i = 0;
-  for (i; i < arr.length; i++) {
-    sum += arr[i];
+  for (i; i < values.length; i++) {
+    sum += values[i];
   }
   // Similar to .toFixed(3)
   return Math.round((sum / i) * 1000) / 1000;
+}
+// MÉDIA PONDERADA
+function W_AVG(values, weights) {
+  if (values.length !== weights.length) {
+    throw "Values and Weights have different length";
+  }
+  let numerador = 0;
+  let denominador = 0;
+  for (let i = 0; i < values.length; i++) {
+    numerador += values[i] * weights[i];
+    denominador += weights[i];
+  }
+  return Math.round((numerador / denominador) * 1000) / 1000;
 }
