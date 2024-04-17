@@ -1,5 +1,7 @@
 // ADICIONAR A PORCENTAGEM E O CIRCULO DE PROGRESSO
-
+/**--------------------------------------------
+ *h/          PILAR CLASS
+ *---------------------------------------------**/
 class Pilar {
   constructor(id) {
     this.id = id;
@@ -15,11 +17,18 @@ class Pilar {
     return W_AVG([this[0], this[1], this[2]], this.weights);
   }
 }
-
+/**--------------------------------------------
+ *h/          GLOBAL VARIABLES
+ *---------------------------------------------**/
 const $container = $("#container-fwa");
 const max_question_number = $(".question-fwa-wrapper").length;
+const max_questions_per_pilar = 3;
 let current_question_number = 1;
+const pilaresNames = ["contexto", "recursos", "ideias", "acoes", "resultados"];
 
+/**--------------------------------------------
+ *h/          ANALISE OBJECT
+ *---------------------------------------------**/
 const Analise = {
   pilar: {
     contexto: new Pilar("contexto"),
@@ -41,19 +50,35 @@ const Analise = {
     return AVG([this.pilar.ideias.average, this.pilar.acoes.average]);
   },
   // Define o valor do criterio do pilar e o valor das analises
-  updateValues: function (obj) {
+  updateValue: function (obj) {
     const { value, index, pilar } = obj;
     this.pilar[pilar][index] = value;
   },
-
-  updateWeights: function (obj) {
+  updateWeight: function (obj) {
     const { value, index, pilar } = obj;
     this.pilar[pilar].weights[index] = value;
+  },
+  // A partir do localStorage, recupera as respostas anteriores do usuário
+  recoverAllData: function (pilar) {
+    const { id, weights, ...values } = pilar;
+    for (let i = 0; i < max_questions_per_pilar; i++) {
+      this.updateValue({ value: values[i], index: i, pilar: id });
+      this.updateWeight({ value: weights[i], index: i, pilar: id });
+    }
   },
   setLocalStorage: function () {
     window.localStorage.setItem("analise_CRIAR", JSON.stringify(this));
   },
+  getLocalStorage: function (lsAnalise) {
+    for (let i = 0; i < pilaresNames.length; i++) {
+      this.recoverAllData(lsAnalise.pilar[pilaresNames[i]]);
+    }
+  },
 };
+
+/**--------------------------------------------
+ *h/          MAIN FUNCTIONS
+ *---------------------------------------------**/
 
 function getAnswer($clicked_option) {
   const answer = $clicked_option.index();
@@ -62,7 +87,7 @@ function getAnswer($clicked_option) {
     .attr("question-index");
   const pilar = $clicked_option.parents(".section-pilar-fwa").attr("pilar");
 
-  Analise.updateValues({
+  Analise.updateValue({
     pilar: pilar,
     value: parseInt(answer),
     index: parseInt(question_index),
@@ -75,7 +100,7 @@ function getWeight($weight_option) {
     .parents(".question-fwa-wrapper")
     .attr("question-index");
   const pilar = $weight_option.parents(".section-pilar-fwa").attr("pilar");
-  Analise.updateWeights({
+  Analise.updateWeight({
     pilar: pilar,
     value: parseInt(value),
     index: parseInt(question_index),
@@ -101,7 +126,7 @@ function nextQuestion($option) {
 }
 
 function focusNextQuestion($question) {
-  $question.attr("question-status", ""); // set status no none
+  $question.attr("question-status", ""); // set status to null/none
   $container
     .find("[question-number='" + current_question_number + "']")
     .attr("question-status", "current");
@@ -121,20 +146,59 @@ function moveToNextQuestion() {
   });
 }
 
+function updatePilarProgress(pilarName){
+  const average = Analise.pilar[pilarName].average;
+  $(".section-pilar-fwa[pilar='"+ pilarName +"']").find(".circle-fwa").attr("value", average);
+}
+
+function oldDataSelection(lsAnalise) {
+  for (let i = 0; i < pilaresNames.length; i++) {
+    const pilar = lsAnalise.pilar[pilaresNames[i]];
+    for (let index = 0; index < max_questions_per_pilar; index++) {
+      let $question = $(".section-pilar-fwa[pilar='" + pilar.id + "']").find(
+        "[question-index='" + index + "']"
+      );
+      let $option = $question.find(".option-fwa").eq(pilar[index]);
+      let $weight_option = $question
+        .find(".weight-fwa-option")
+        .eq(pilar.weights[index]-1);
+        updatePilarProgress(pilar.id);
+        highlightSelection($option, "selected");
+        highlightSelection($weight_option, "selected");
+    }
+  }
+}
+
+function loadOldData(){
+  const lsAnalise = JSON.parse(window.localStorage.getItem("analise_CRIAR"));
+  if (!lsAnalise) {
+    console.log("No answers yet");
+    return;
+  }
+  Analise.getLocalStorage(lsAnalise);
+  oldDataSelection(lsAnalise);
+}
+
 /**--------------------------------------------
  *h/          EVENT HANDLERS
  *---------------------------------------------**/
 $(".option-fwa").on("click", function () {
   const $option = $(this);
+  const pilarName = $option.parents(".section-pilar-fwa").attr("pilar");
   getAnswer($option);
+  updatePilarProgress(pilarName);
   highlightSelection($option, "selected");
   nextQuestion($option);
+  Analise.setLocalStorage();
 });
 
 $(".weight-fwa-option").on("click", function () {
   const $weight_option = $(this);
+  const pilarName = $weight_option.parents(".section-pilar-fwa").attr("pilar");
   getWeight($weight_option);
+  updatePilarProgress(pilarName);
   highlightSelection($weight_option, "selected");
+  Analise.setLocalStorage();
 });
 
 /**--------------------------------------------
@@ -162,3 +226,8 @@ function W_AVG(values, weights) {
   }
   return Math.round((numerador / denominador) * 1000) / 1000;
 }
+
+/**--------------------------------------------
+ *h/          STARTER FUNCTIONS
+ *---------------------------------------------**/
+loadOldData();
