@@ -4,9 +4,9 @@
 class Pilar {
   constructor(id) {
     this.id = id;
-    this[0] = 0;
-    this[1] = 0;
-    this[2] = 0;
+    this[0] = -1;
+    this[1] = -1;
+    this[2] = -1;
     this.weights = [3, 3, 3];
   }
   get average() {
@@ -163,6 +163,7 @@ function updatePilarProgress(pilarName) {
 function oldDataSelection(lsAnalise) {
   for (let i = 0; i < pilaresNames.length; i++) {
     const pilar = lsAnalise.pilar[pilaresNames[i]];
+    // index = quesiton-index // itera pelas perguntas de cada pilar
     for (let index = 0; index < max_questions_per_pilar; index++) {
       let $question = $(".section-pilar-fwa[pilar='" + pilar.id + "']").find(
         "[question-index='" + index + "']"
@@ -172,7 +173,10 @@ function oldDataSelection(lsAnalise) {
         .find(".weight-fwa-option")
         .eq(pilar.weights[index] - 1);
       updatePilarProgress(pilar.id);
-      highlightSelection($option, "selected");
+      // -1 significa que a pergunta ainda não foi respondida, portanto não seleciona visualmente
+      if(pilar[index] !== -1){
+        highlightSelection($option, "selected");
+      }
       highlightSelection($weight_option, "selected");
     }
   }
