@@ -1,4 +1,3 @@
-// ADICIONAR A PORCENTAGEM E O CIRCULO DE PROGRESSO
 /**--------------------------------------------
  *h/          PILAR CLASS
  *---------------------------------------------**/
@@ -35,7 +34,7 @@ const Analise = {
     recursos: new Pilar("recursos"),
     ideias: new Pilar("ideias"),
     acoes: new Pilar("acoes"),
-    resultados: new Pilar("resultados"),
+    resultados: new Pilar("resultados")
   },
   // FATOR K = MEDIA(Contexto, Resultados)
   get fatorK() {
@@ -73,7 +72,7 @@ const Analise = {
     for (let i = 0; i < pilaresNames.length; i++) {
       this.recoverAllData(lsAnalise.pilar[pilaresNames[i]]);
     }
-  },
+  }
 };
 
 /**--------------------------------------------
@@ -103,7 +102,7 @@ function getWeight($weight_option) {
   Analise.updateWeight({
     pilar: pilar,
     value: parseInt(value),
-    index: parseInt(question_index),
+    index: parseInt(question_index)
   });
 }
 
@@ -114,13 +113,17 @@ function highlightSelection($clicked_option, className) {
 
 function nextQuestion($option) {
   const $question = $option.parents(".question-fwa-wrapper");
-
   if (
     $question.attr("question-status") == "current" &&
     current_question_number < max_question_number
   ) {
+    const questionIndex = parseInt($question.attr("question-index"));
     current_question_number++;
+
     focusNextQuestion($question);
+    if (questionIndex + 1 === max_questions_per_pilar) {
+      moveToNextPage();
+    }
     moveToNextQuestion();
   }
 }
@@ -131,7 +134,11 @@ function focusNextQuestion($question) {
     .find("[question-number='" + current_question_number + "']")
     .attr("question-status", "current");
 }
-
+function moveToNextPage() {
+  setTimeout(() => {
+    $(".arrow-fwa.right").click();
+  }, 500);
+}
 function moveToNextQuestion() {
   const $next_question = $container.find(
     "[question-number='" + current_question_number + "']"
@@ -146,9 +153,11 @@ function moveToNextQuestion() {
   });
 }
 
-function updatePilarProgress(pilarName){
+function updatePilarProgress(pilarName) {
   const average = Analise.pilar[pilarName].average;
-  $(".section-pilar-fwa[pilar='"+ pilarName +"']").find(".circle-fwa").attr("value", average);
+  $(".section-pilar-fwa[pilar='" + pilarName + "']")
+    .find(".circle-fwa")
+    .attr("value", average);
 }
 
 function oldDataSelection(lsAnalise) {
@@ -161,15 +170,14 @@ function oldDataSelection(lsAnalise) {
       let $option = $question.find(".option-fwa").eq(pilar[index]);
       let $weight_option = $question
         .find(".weight-fwa-option")
-        .eq(pilar.weights[index]-1);
-        updatePilarProgress(pilar.id);
-        highlightSelection($option, "selected");
-        highlightSelection($weight_option, "selected");
+        .eq(pilar.weights[index] - 1);
+      updatePilarProgress(pilar.id);
+      highlightSelection($option, "selected");
+      highlightSelection($weight_option, "selected");
     }
   }
 }
-
-function loadOldData(){
+function loadOldData() {
   const lsAnalise = JSON.parse(window.localStorage.getItem("analise_CRIAR"));
   if (!lsAnalise) {
     console.log("No answers yet");
