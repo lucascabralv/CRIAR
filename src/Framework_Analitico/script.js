@@ -8,6 +8,7 @@ class Pilar {
     this[1] = -1;
     this[2] = -1;
     this.weights = [3, 3, 3];
+    this.avg = -1;
   }
   get average() {
     // Média Simples
@@ -24,6 +25,7 @@ const max_question_number = $(".question-fwa-wrapper").length;
 const max_questions_per_pilar = 3;
 let current_question_number = 1;
 const pilaresNames = ["contexto", "recursos", "ideias", "acoes", "resultados"];
+let isCompleted = false;
 
 /**--------------------------------------------
  *h/          ANALISE OBJECT
@@ -34,7 +36,7 @@ const Analise = {
     recursos: new Pilar("recursos"),
     ideias: new Pilar("ideias"),
     acoes: new Pilar("acoes"),
-    resultados: new Pilar("resultados")
+    resultados: new Pilar("resultados"),
   },
   // FATOR K = MEDIA(Contexto, Resultados)
   get fatorK() {
@@ -49,30 +51,32 @@ const Analise = {
     return AVG([this.pilar.ideias.average, this.pilar.acoes.average]);
   },
   // Define o valor do criterio do pilar e o valor das analises
-  updateValue: function (obj) {
+  updateValue(obj) {
     const { value, index, pilar } = obj;
     this.pilar[pilar][index] = value;
+    // Atualiza também o valor da média do Pilar
+    this.pilar[pilar].avg = this.pilar[pilar].average;
   },
-  updateWeight: function (obj) {
+  updateWeight(obj) {
     const { value, index, pilar } = obj;
     this.pilar[pilar].weights[index] = value;
   },
   // A partir do localStorage, recupera as respostas anteriores do usuário
-  recoverAllData: function (pilar) {
+  recoverAllData(pilar) {
     const { id, weights, ...values } = pilar;
     for (let i = 0; i < max_questions_per_pilar; i++) {
       this.updateValue({ value: values[i], index: i, pilar: id });
       this.updateWeight({ value: weights[i], index: i, pilar: id });
     }
   },
-  setLocalStorage: function () {
+  setLocalStorage() {
     window.localStorage.setItem("analise_CRIAR", JSON.stringify(this));
   },
-  getLocalStorage: function (lsAnalise) {
+  getLocalStorage(lsAnalise) {
     for (let i = 0; i < pilaresNames.length; i++) {
       this.recoverAllData(lsAnalise.pilar[pilaresNames[i]]);
     }
-  }
+  },
 };
 
 /**--------------------------------------------
@@ -102,7 +106,7 @@ function getWeight($weight_option) {
   Analise.updateWeight({
     pilar: pilar,
     value: parseInt(value),
-    index: parseInt(question_index)
+    index: parseInt(question_index),
   });
 }
 
@@ -139,9 +143,10 @@ function moveToNextPage() {
     $(".arrow-fwa.right").click();
   }, 500);
 }
-function moveToNextQuestion() {
+function moveToNextQuestion(number) {
+  questionNumber = number ? number : current_question_number;
   const $next_question = $container.find(
-    "[question-number='" + current_question_number + "']"
+    "[question-number='" + questionNumber + "']"
   );
   const elementRect = $next_question[0].getBoundingClientRect();
   const absoluteElementTop = elementRect.top + window.pageYOffset;
@@ -152,6 +157,9 @@ function moveToNextQuestion() {
     behavior: "smooth",
   });
 }
+$(".arrow-fw").click(() => {
+  moveToNextQuestion(1);
+});
 
 function updatePilarProgress(pilarName) {
   const average = Analise.pilar[pilarName].average;
@@ -159,11 +167,10 @@ function updatePilarProgress(pilarName) {
     .find(".circle-fwa")
     .attr("value", average);
 }
-
+// Seleciona visualmente
 function oldDataSelection(lsAnalise) {
   for (let i = 0; i < pilaresNames.length; i++) {
     const pilar = lsAnalise.pilar[pilaresNames[i]];
-    // index = quesiton-index // itera pelas perguntas de cada pilar
     for (let index = 0; index < max_questions_per_pilar; index++) {
       let $question = $(".section-pilar-fwa[pilar='" + pilar.id + "']").find(
         "[question-index='" + index + "']"
@@ -173,8 +180,7 @@ function oldDataSelection(lsAnalise) {
         .find(".weight-fwa-option")
         .eq(pilar.weights[index] - 1);
       updatePilarProgress(pilar.id);
-      // -1 significa que a pergunta ainda não foi respondida, portanto não seleciona visualmente
-      if(pilar[index] !== -1){
+      if (pilar[index] !== -1) {
         highlightSelection($option, "selected");
       }
       highlightSelection($weight_option, "selected");
@@ -184,9 +190,10 @@ function oldDataSelection(lsAnalise) {
 function loadOldData() {
   const lsAnalise = JSON.parse(window.localStorage.getItem("analise_CRIAR"));
   if (!lsAnalise) {
-    console.log("No answers yet");
     return;
   }
+  isCompleted = true;
+  current_question_number = max_question_number;
   Analise.getLocalStorage(lsAnalise);
   oldDataSelection(lsAnalise);
 }
