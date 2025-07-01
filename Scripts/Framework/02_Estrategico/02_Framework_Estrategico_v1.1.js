@@ -7,6 +7,9 @@ class Framework_Estrategico {
   solucoes_selecionadas = [];
   complementos_selecionados = [];
 
+  preco_geral_total = 0;
+
+
   async load() {
     const SOLUCOES = new Solucoes();
     await SOLUCOES.buildListaDeSolucoes();
@@ -35,9 +38,9 @@ class Framework_Estrategico {
     const solucao_total = this.calcAllPilaresSolucaoPreco();
     const complemento_total = this.calcAllPilaresComplementoPreco();
 
-    const preco_total_pilar = solucao_total + complemento_total;
+    this.preco_geral_total = solucao_total + complemento_total;
 
-    $("[price_el='geral_total']").text(numberToReal(preco_total_pilar));
+    $("[price_el='geral_total']").text(numberToReal(this.preco_geral_total));
   }
 
   /**=============

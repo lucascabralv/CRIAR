@@ -22,6 +22,8 @@ const F_ESTRATEGICO = new Framework_Estrategico();
 const GRAFICOS = new Graficos();
 const ESTATISTICAS = new Estatisticas();
 
+const ROI_ESTRATEGICO = new ROI();
+
 (async () => {
   await F_ESTRATEGICO.load();
   GRAFICOS.load();
@@ -30,7 +32,6 @@ const ESTATISTICAS = new Estatisticas();
   // OLD DATA RECOVER
   F_ANALITICO.loadOldData();
   F_ESTRATEGICO.loadOldData();
-
 
   setTimeout(() => {
     $(".page-loader").addClass("hidden");

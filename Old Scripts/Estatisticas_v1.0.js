@@ -1,3 +1,10 @@
+/**------------------------------------------------------------------------
+ *                       DADOS E ESTATISTICAS
+ *------------------------------------------------------------------------**/
+/**--------------------------------------------
+ *               Class Graficos
+ *---------------------------------------------**/
+
 class Graficos {
   lista_pilares = [];
   lista_cores = {
@@ -19,10 +26,13 @@ class Graficos {
         RadarChart: this.setPilarRadar(pilar_name, lista_pilar_solucoes),
       };
     });
-    // GERAL
-    this.lista_frameworks["geral"] = {
-      RadarChart: this.setFrameworkRadar("geral"),
-    };
+    // Each Framework
+    FRAMEWORKS.forEach((framework)=> {
+      this.lista_frameworks[framework] = {
+        RadarChart: this.setFrameworkRadar(framework),
+      } 
+    });
+
   }
 
   //h/ Por pilar
@@ -61,17 +71,15 @@ class Graficos {
             label: "Analítico",
             data: radarChartDefaultData,
             borderWidth: 1,
-            backgroundColor: this.lista_cores[pilar_name][0],
+            backgroundColor: "transparent",
             borderColor: this.lista_cores[pilar_name][0],
-            fill: false,
           },
           {
             label: "Estratégico",
             data: radarChartDefaultData,
             borderWidth: 1,
-            backgroundColor: this.lista_cores[pilar_name][1],
+            backgroundColor: "transparent",
             borderColor: this.lista_cores[pilar_name][1],
-            fill: false,
           },
         ],
       },
@@ -131,78 +139,26 @@ class Graficos {
       .find("[nc_el='bar_solucao_average']")
       .text(value);
   }
-  //h/ GERAL (NOVO)
-  // EFETIVIDADE
-  updateGeralEfetividade(dataGeral, dataAnalitico) {
-    // GERAL ONLY
-    this.updateFrameworkChart(
-      "geral",
-      dataGeral.eficiencia,
-      dataGeral.eficacia,
-      dataGeral.efetividade
-    );
-    this.updateFrameworkGauge(
-      "geral",
-      dataGeral.eficiencia,
-      dataGeral.eficacia
-    );
-    // ANALITICO ONLY
-    this.updateFrameworkChart(
-      "analitico",
-      dataAnalitico.eficiencia,
-      dataAnalitico.eficacia,
-      dataAnalitico.efetividade
-    );
-    this.updateFrameworkGauge(
-      "analitico",
-      dataAnalitico.eficiencia,
-      dataAnalitico.eficacia
-    );
-
-    this.updateGeralFatorK(dataGeral.fator_k, dataAnalitico.fator_k);
-
-    this.updateGeralRadar(dataGeral.pilares, dataAnalitico.pilares);
-  }
-
-  // FATOR K -> Lampada/Percentual/Escala
-  updateGeralFatorK(fator_k_Geral, fator_k_Analitico) {
-    $("[nc_data_tipo='fator_k']").attr("fatorK_Geral", fator_k_Geral.categoria);
-    $("[nc_data_tipo='fator_k']").attr(
-      "fatorK_Analitico",
-      fator_k_Analitico.categoria
-    );
-
-    $(
-      "[nc_data_tipo='fator_k'] [nc_data_framework='geral'][nc_data_type='percentage']"
-    ).text(fator_k_Geral.value);
-    $(
-      "[nc_data_tipo='fator_k'] [nc_data_framework='analitico'][nc_data_type='percentage']"
-    ).text(fator_k_Analitico.value);
-  }
-
-  updateGeralRadar(pilaresGeral, pilaresAnalitico) {
-    this.lista_frameworks["geral"].RadarChart.data.datasets[0].data = [
-      pilaresAnalitico.contexto,
-      pilaresAnalitico.recursos,
-      pilaresAnalitico.ideias,
-      pilaresAnalitico.acoes,
-      pilaresAnalitico.resultados,
-    ];
-    this.lista_frameworks["geral"].RadarChart.data.datasets[1].data = [
-      pilaresGeral.contexto,
-      pilaresGeral.recursos,
-      pilaresGeral.ideias,
-      pilaresGeral.acoes,
-      pilaresGeral.resultados,
-    ];
-    this.lista_frameworks["geral"].RadarChart.update();
-  }
 
   //h/ Por Framework
+  // EFETIVIDADE
+  updateFrameworkEfetividade(framework, data) {
+    this.updateFrameworkChart(
+      framework,
+      data.eficiencia,
+      data.eficacia,
+      data.efetividade
+    );
+    this.updateFrameworkGauge(framework, data.eficiencia, data.eficacia);
+    this.updateFrameworkFatorK(framework, data.fator_k);
+    if (framework === "geral") {
+      this.updateFrameworkRadar(framework, data.pilares);
+    }
+  }
   // EFETIVIDADE -> Eixo X,Y
   updateFrameworkChart(framework, eficiencia, eficacia, efetividade) {
     // Dot Position
-    const { x, y } = createVector(eficacia, eficiencia);
+    const { x, y } = createVector(eficiencia, eficacia);
     $("[nc_data_framework='" + framework + "'][nc_data_type='vector']")
       .css("left", x + "%")
       .css("bottom", y + "%");
@@ -252,6 +208,18 @@ class Graficos {
         "'][nc_data_type='number']"
     ).text(normalizeValue(value));
   }
+  // FATOR K -> Lampada/Percentual/Escala
+  updateFrameworkFatorK(framework, fator_k) {
+    $("[nc_data_framework='" + framework + "'][nc_data_tipo='fator_k']").attr(
+      "fatork",
+      fator_k.categoria
+    );
+    $(
+      "[nc_data_framework='" +
+        framework +
+        "'][nc_data_tipo='fator_k'] [nc_data_type='percentage']"
+    ).text(fator_k.value);
+  }
 
   // RADAR
   setFrameworkRadar(framework) {
@@ -259,7 +227,7 @@ class Graficos {
       "[nc_data_framework='" + framework + "'][nc_data_tipo='radar']"
     );
 
-    if (!radarCanvas) return;
+    if(!radarCanvas) return;
 
     const radarChartDefaultData = [0, 0, 0, 0, 0];
     const RadarChart = new Chart(radarCanvas, {
@@ -268,21 +236,12 @@ class Graficos {
         labels: ["C.ontexto", "R.ecursos", "I.deias", "A.ções", "R.esultados"],
         datasets: [
           {
-            label: "Análise Atual",
+            label: "",
             data: radarChartDefaultData,
             borderWidth: 1,
-            backgroundColor: "#FFF",
-            borderColor: "#FFF",
-            fill: false,
-          },
-          {
-            label: "Projeção Estratégica",
-            data: radarChartDefaultData,
-            borderWidth: 1,
-            backgroundColor: "#038C8C",
+            backgroundColor: "transparent",
             borderColor: "#038C8C",
-            fill: false,
-          },
+          }
         ],
       },
       options: {
@@ -314,8 +273,23 @@ class Graficos {
 
     return RadarChart;
   }
+  updateFrameworkRadar(framework, pilares){
+    // Update valores radar
+    this.lista_frameworks[framework].RadarChart.data.datasets[0].data = [
+      pilares.contexto,
+      pilares.recursos,
+      pilares.ideias,
+      pilares.acoes,
+      pilares.resultados,
+    ];
+    this.lista_frameworks[framework].RadarChart.update();
+  }
+
 }
 
+/**--------------------------------------------
+ *               Class Estatisticas
+ *---------------------------------------------**/
 class Estatisticas {
   lista_pilares = [];
   lista_solucoes_analiticas = [];
@@ -328,7 +302,7 @@ class Estatisticas {
     this.setListaPilares();
     this.setListaAnalitica();
     this.setListaEstrategica();
-    this.ARRAY_SIZE = this.lista_solucoes_analiticas.length;
+    this.ARRAY_SIZE = this.lista_solucoes_analiticas.length; // Número total de solucoes
     this.setListaEstatisticasAllSolucoes();
   }
 
@@ -348,6 +322,7 @@ class Estatisticas {
     this.lista_solucoes_estrategicas = F_ESTRATEGICO.getListaMediaSolucoes();
   }
   setListaEstatisticasAllSolucoes() {
+    //const current_solucao = F_ESTRATEGICO.findSolucaoByID(i + 1);
     for (let i = 0; i < this.ARRAY_SIZE; i++) {
       this.lista_estatisticas_all_solucoes.push({
         id: i + 1,
@@ -403,16 +378,16 @@ class Estatisticas {
   calculateEfetividade(eficiencia, eficacia) {
     return {
       quadrante: this.getEfetividadeQuadrante(
-        createVector(eficacia, eficiencia)
+        createVector(eficiencia, eficacia)
       ),
-      area: this.getEfetividadeArea(createVector(eficacia, eficiencia)),
+      area: this.getEfetividadeArea(createVector(eficiencia, eficacia)),
     };
   }
   calculateEfetividadePadrao(fator_k, recursos, ideias, acoes) {
     let padroes = {
       padrao_1: "saudavel",
-      padrao_2: "saudavel",
-    };
+      padrao_2: "saudavel"
+    }
     if (fator_k <= recursos) {
       padroes.padrao_1 = "insalubre";
     }
@@ -606,13 +581,22 @@ class Estatisticas {
   }
 
   updateFrameworks() {
-    const f_analitico_data = this.getFrameworkData(
+    /* const f_analitico_data = this.getFrameworkData(
       this.lista_pilares["contexto"].media_analitica,
       this.lista_pilares["recursos"].media_analitica,
       this.lista_pilares["ideias"].media_analitica,
       this.lista_pilares["acoes"].media_analitica,
       this.lista_pilares["resultados"].media_analitica
-    );
+    ); */
+
+    /* const f_estrategico_data = this.getFrameworkData(
+      this.lista_pilares["contexto"].media_estrategica,
+      this.lista_pilares["recursos"].media_estrategica,
+      this.lista_pilares["ideias"].media_estrategica,
+      this.lista_pilares["acoes"].media_estrategica,
+      this.lista_pilares["resultados"].media_estrategica
+    ); */
+
     const f_geral_data = this.getFrameworkData(
       this.lista_pilares["contexto"].media_analitica_estrategica,
       this.lista_pilares["recursos"].media_analitica_estrategica,
@@ -620,6 +604,11 @@ class Estatisticas {
       this.lista_pilares["acoes"].media_analitica_estrategica,
       this.lista_pilares["resultados"].media_analitica_estrategica
     );
-    GRAFICOS.updateGeralEfetividade(f_geral_data, f_analitico_data);
+    // GRAFICOS
+    // EFETIVIDADE
+    GRAFICOS.updateFrameworkEfetividade("geral", f_geral_data);
+
+    //GRAFICOS.updateFrameworkEfetividade("analitico", f_analitico_data);
+    //GRAFICOS.updateFrameworkEfetividade("estrategico", f_estrategico_data);
   }
 }
