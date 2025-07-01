@@ -50,16 +50,23 @@ class ROI {
   }
 
   calculateAllValues() {
-    this.faturamento_total_vendas =
+    this.faturamento_total_vendas = normalizeValue(
       this.venda_recorrente_ltv *
-      this.projecao_aquisicao_clientes *
-      this.ticket_medio_vendas;
-    this.investimento_total_mkt =
-      this.investimento_estrategico * this.investimento_mkt;
-    this.receita_liquida_total =
-      this.faturamento_total_vendas - this.investimento_total_mkt;
-    this.CPA = this.investimento_total_mkt / this.projecao_aquisicao_clientes;
-    this.ROI = this.receita_liquida_total / this.investimento_total_mkt;
+	  this.projecao_aquisicao_clientes *
+	  this.ticket_medio_vendas
+    );
+    this.investimento_total_mkt = normalizeValue(
+      this.investimento_estrategico * this.investimento_mkt
+    );
+    this.receita_liquida_total = normalizeValue(
+      this.faturamento_total_vendas - this.investimento_total_mkt
+    );
+    this.CPA = normalizeValue(
+      this.investimento_total_mkt / this.projecao_aquisicao_clientes
+    );
+    this.ROI = normalizeValue(
+      this.receita_liquida_total / this.investimento_total_mkt
+    );
   }
 
   setAllTexts() {
@@ -73,6 +80,6 @@ class ROI {
       numberToReal(this.receita_liquida_total)
     );
     $("[roi_el='CPA']").text(numberToReal(this.CPA));
-    $("[roi_el='ROI']").text(normalizeValue(this.ROI) + "%");
+    $("[roi_el='ROI']").text(normalizeValue(this.ROI * 100) + "%");
   }
 }
