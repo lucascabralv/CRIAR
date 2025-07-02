@@ -70,7 +70,7 @@ class ROI {
     );
     this.ROI = normalizeValue(
       this.receita_liquida_total / this.investimento_total_mkt,
-      2
+      4
     );
   }
 
