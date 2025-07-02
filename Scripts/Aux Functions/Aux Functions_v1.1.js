@@ -67,13 +67,14 @@ function numberToReal(number) {
 /**--------------------------------------------
  *              GRAPH FUNCTIONS
  *---------------------------------------------**/
-function normalizeValue(value) {
+function normalizeValue(value, decimais = 1) {
   value = value >= 0 ? value : 0;
 
-  return roundNumber(value);
+  return roundNumber(value, decimais);
 }
-function roundNumber(number) {
-  return Math.round(parseFloat(number) * 10)/10;
+function roundNumber(number, decimais) {
+  const constante_decimal = Math.pow(10, decimais);
+  return Math.round(parseFloat(number) * constante_decimal) / constante_decimal;
 }
 function isInsideTriangle(P, A, B, C) {
   const triangle_area = calcTriangleArea(A, B, C);
