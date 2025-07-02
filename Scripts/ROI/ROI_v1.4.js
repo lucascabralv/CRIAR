@@ -54,23 +54,23 @@ class ROI {
       this.venda_recorrente_ltv *
         this.projecao_aquisicao_clientes *
         this.ticket_medio_vendas,
-      2 // 2 casas decimais
+      2, true
     );
     this.investimento_total_mkt = normalizeValue(
       this.investimento_estrategico * this.investimento_mkt,
-      2
+      2, true
     );
     this.receita_liquida_total = normalizeValue(
       this.faturamento_total_vendas - this.investimento_total_mkt,
-      2
+      2, true
     );
     this.CPA = normalizeValue(
       this.investimento_total_mkt / this.projecao_aquisicao_clientes,
-      2
+      2, true
     );
     this.ROI = normalizeValue(
       this.receita_liquida_total / this.investimento_total_mkt,
-      4
+      4, true
     );
   }
 
@@ -85,6 +85,6 @@ class ROI {
       numberToReal(this.receita_liquida_total)
     );
     $("[roi_el='CPA']").text(numberToReal(this.CPA));
-    $("[roi_el='ROI']").text(normalizeValue(this.ROI * 100, 2) + "%");
+    $("[roi_el='ROI']").text(normalizeValue(this.ROI * 100, 2, true) + "%");
   }
 }

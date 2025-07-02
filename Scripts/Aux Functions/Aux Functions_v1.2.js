@@ -67,8 +67,10 @@ function numberToReal(number) {
 /**--------------------------------------------
  *              GRAPH FUNCTIONS
  *---------------------------------------------**/
-function normalizeValue(value, decimais = 1) {
-  value = value >= 0 ? value : 0;
+function normalizeValue(value, decimais = 1, allowNegative = false) {
+  if(!allowNegative){  
+    value = value >= 0 ? value : 0;
+  }
 
   return roundNumber(value, decimais);
 }
