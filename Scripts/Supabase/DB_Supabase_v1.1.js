@@ -50,9 +50,13 @@ class DB_Supabase {
       email: email,
       password: password,
     });
-
-    this.user_id = data.user.id;
-    this.userLogged();
+    if(error){
+      console.log(error);
+      alert("Erro ao fazer login");
+    } else {
+      this.user_id = data.user.id;
+      this.userLogged();
+    }
   }
 
   async userSignUp(email, password, name, last_name) {
